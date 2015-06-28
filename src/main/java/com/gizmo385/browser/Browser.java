@@ -2,6 +2,7 @@ package com.gizmo385.browser;
 
 import java.util.Optional;
 
+import javafx.collections.ListChangeListener;
 import javafx.concurrent.Worker.State;
 import javafx.geometry.Orientation;
 import javafx.application.Application;
@@ -29,6 +30,12 @@ public class Browser extends Application {
         primaryStage.setTitle("VimBrowser");
 
         this.pane = new TabPane();
+        ListChangeListener<Tab> listener = c -> {
+            if(this.pane.getTabs().isEmpty()) {
+                System.exit(0);
+            }
+        };
+        this.pane.getTabs().addListener(listener);
         this.pane.setPrefWidth(PREF_WIDTH);
         this.pane.setPrefHeight(PREF_HEIGHT);
 
