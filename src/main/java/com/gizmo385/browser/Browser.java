@@ -40,6 +40,12 @@ public class Browser extends Application {
             }
         };
         this.pane.getTabs().addListener(lastTabClosedListener);
+        this.pane.setOnKeyPressed(event -> {
+            KeyCode code = event.getCode();
+            if(event.isControlDown() && code == KeyCode.T) {
+                newTab();
+            }
+        });
 
         // Set up the initial tab
         Tab initialTab = new Tab();
@@ -158,6 +164,28 @@ public class Browser extends Application {
         private void addSplit(WebBuffer buffer) {
             this.getItems().add(buffer);
             this.setResizableWithParent(buffer, false);
+            this.locationBar.setText(engine.getLocation());
+            resizeBuffer();
+        }
+
+        private void addHorizontalSplit() {
+            WebBuffer buffer = new WebBuffer(this, tab, this.bufferWidth, this.bufferHeight,
+                    locationBar.getCharacters().toString());
+            buffer.setOrientation(Orientation.VERTICAL);
+            this.setPrefHeight(this.getPrefHeight() / 2);
+            this.setOrientation(Orientation.VERTICAL);
+
+            addSplit(buffer);
+        }
+
+        private void addVerticalSplit() {
+            WebBuffer buffer = new WebBuffer(this, tab, this.bufferWidth, this.bufferHeight,
+                    locationBar.getCharacters().toString());
+            buffer.setOrientation(Orientation.HORIZONTAL);
+            this.setPrefHeight(this.getPrefHeight() / 2);
+            this.setOrientation(Orientation.HORIZONTAL);
+
+            addSplit(buffer);
         }
 
         private void removeSplit(WebBuffer buffer) {
@@ -202,30 +230,19 @@ public class Browser extends Application {
                 } catch( IndexOutOfBoundsException ioobe ) { }
             });
 
-            // This should split the current pane in half vertically
-            this.horizontalSplitButton.setOnAction(event -> {
-                WebBuffer newBuffer = new WebBuffer(this, tab, this.bufferWidth, this.bufferHeight,
-                    locationBar.getCharacters().toString());
-                newBuffer.setOrientation(Orientation.VERTICAL);
-                this.addSplit(newBuffer);
-                this.setPrefHeight(this.getPrefHeight() / 2);
-                this.setOrientation(Orientation.VERTICAL);
-                this.locationBar.setText(engine.getLocation());
-            });
+            // Splitting buttons
+            this.horizontalSplitButton.setOnAction(event ->  addHorizontalSplit());
+            this.verticalSplitButton.setOnAction(event ->  addVerticalSplit());
 
-            // This should split the current pane in half vertically
-            this.verticalSplitButton.setOnAction(event -> {
-                WebBuffer newBuffer = new WebBuffer(this, tab, this.bufferWidth, this.bufferHeight,
-                    locationBar.getCharacters().toString());
-                this.addSplit(newBuffer);
-                this.setPrefWidth(this.getPrefWidth() / 2);
-                this.setOrientation(Orientation.HORIZONTAL);
-                this.locationBar.setText(engine.getLocation());
-            });
 
             // Change the location bar width
             this.widthProperty().addListener((value, oldWidth, newWidth) -> {
                 this.locationBar.setPrefWidth(newWidth.intValue() * .7);
+            });
+            this.locationBar.setOnKeyPressed(event -> {
+                if( event.getCode() == KeyCode.ESCAPE ) {
+                    locationBar.setText(engine.getLocation());
+                }
             });
 
             // Handling key presses
@@ -237,14 +254,16 @@ public class Browser extends Application {
                         locationBar.requestFocus();
                     } else if( code == KeyCode.R ) {
                         engine.reload();
-                    } else if( code == KeyCode.T ) {
-                        newTab();
                     } else if( code == KeyCode.W ) {
                         if( event.isShiftDown() ) {
                             System.exit(0);
                         } else {
                             closeTab();
                         }
+                    } else if( code == KeyCode.E ) {
+                        addHorizontalSplit();
+                    } else if( code == KeyCode.O ) {
+                        addVerticalSplit();
                     }
                 }
             });
