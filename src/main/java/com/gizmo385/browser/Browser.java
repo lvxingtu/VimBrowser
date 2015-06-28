@@ -40,6 +40,8 @@ public class Browser extends Application {
             }
         };
         this.pane.getTabs().addListener(lastTabClosedListener);
+
+        // Open new tabs with ctrl-t
         this.pane.setOnKeyPressed(event -> {
             KeyCode code = event.getCode();
             if(event.isControlDown() && code == KeyCode.T) {
@@ -109,7 +111,7 @@ public class Browser extends Application {
             this.engine = this.buffer.getEngine();
             gotoUrl(homepage);
 
-            // Create the toolbar
+            // Create the location bar
             this.locationBar = new TextField();
             this.locationBar.autosize();
             this.locationBar.setText(this.homepage);
@@ -123,6 +125,8 @@ public class Browser extends Application {
             this.verticalSplitButton = createButton("images/vert_split.png");
             this.menuButton = createButton("images/menu.png");
             this.exitButton = createButton("images/exit.png");
+
+            // Create and populate the toolbar
             ToolBar toolbar = new ToolBar(backButton, forwardButton, refreshButton, homeButton,
                     locationBar, horizontalSplitButton, verticalSplitButton, exitButton,
                     menuButton);
@@ -192,6 +196,22 @@ public class Browser extends Application {
             this.getItems().remove(buffer);
         }
 
+        private void goBack() {
+            try {
+                engine.getHistory().go(-1);
+                String location = locationBar.getCharacters().toString();
+                locationBar.setText(location);
+            } catch( IndexOutOfBoundsException ioobe ) { }
+        }
+
+        private void goForward() {
+            try {
+                engine.getHistory().go(1);
+                String location = locationBar.getCharacters().toString();
+                locationBar.setText(location);
+            } catch( IndexOutOfBoundsException ioobe ) { }
+        }
+
         private void addListeners() {
             // Listener for location bar to go a location
             this.locationBar.setOnAction(event -> {
@@ -214,21 +234,8 @@ public class Browser extends Application {
                 }
             });
 
-            this.backButton.setOnAction(event -> {
-                try {
-                    engine.getHistory().go(-1);
-                    String location = locationBar.getCharacters().toString();
-                    locationBar.setText(location);
-                } catch( IndexOutOfBoundsException ioobe ) { }
-            });
-
-            this.forwardButton.setOnAction(event -> {
-                try {
-                    engine.getHistory().go(1);
-                    String location = locationBar.getCharacters().toString();
-                    locationBar.setText(location);
-                } catch( IndexOutOfBoundsException ioobe ) { }
-            });
+            this.backButton.setOnAction(event -> goBack());
+            this.forwardButton.setOnAction(event -> goForward());
 
             // Splitting buttons
             this.horizontalSplitButton.setOnAction(event ->  addHorizontalSplit());
@@ -247,9 +254,9 @@ public class Browser extends Application {
 
             // Handling key presses
             this.setOnKeyPressed(event -> {
-                if(event.isControlDown()) {
-                    KeyCode code = event.getCode();
+                KeyCode code = event.getCode();
 
+                if(event.isControlDown()) {
                     if( code == KeyCode.L ) {
                         locationBar.requestFocus();
                     } else if( code == KeyCode.R ) {
@@ -264,6 +271,12 @@ public class Browser extends Application {
                         addHorizontalSplit();
                     } else if( code == KeyCode.O ) {
                         addVerticalSplit();
+                    }
+                } else if( event.isAltDown() ) {
+                    if( code == KeyCode.LEFT ) {
+                        goBack();
+                    } else if( code == KeyCode.RIGHT ) {
+                        goForward();
                     }
                 }
             });
