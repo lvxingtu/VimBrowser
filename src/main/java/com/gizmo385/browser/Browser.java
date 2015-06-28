@@ -76,11 +76,13 @@ public class Browser extends Application {
             this.homepage = homepage;
             this.buffer = new WebView();
             this.engine = this.buffer.getEngine();
-            this.engine.load(homepage);
+            //this.engine.load(homepage);
+            gotoUrl(homepage);
 
             // Create the toolbar
             this.locationBar = new TextField();
             this.locationBar.setPrefWidth(this.getWidth() * .7);
+            this.locationBar.setText(this.homepage);
 
             // Create the toolbar buttons
             this.backButton = createButton("images/backward.png");
@@ -109,6 +111,18 @@ public class Browser extends Application {
             this.getItems().add(borderPane);
         }
 
+        public void gotoUrl(String url) {
+            if( url.matches(".+\\.\\w+.*") ) {
+                if( ! url.startsWith("http://") ) {
+                    url = "http://" + url;
+                }
+
+                engine.load(url);
+            } else {
+                engine.load("https://www.google.com/search?q=" + url);
+            }
+        }
+
         public void resizeBuffer() {
             this.locationBar.setPrefWidth(this.getWidth() * .5);
         }
@@ -127,11 +141,8 @@ public class Browser extends Application {
             this.locationBar.setOnAction(event -> {
                 String location = locationBar.getCharacters().toString();
 
-                if( !location.startsWith("http://") ) {
-                    location = "http://" + location;
-                }
-
-                this.engine.load(location);
+                //this.engine.load(location);
+                gotoUrl(location);
                 this.locationBar.setText(location);
             });
 
@@ -139,13 +150,14 @@ public class Browser extends Application {
             this.heightProperty().addListener((value, oldHeight, newHeight) -> resizeBuffer());
 
             // Button actions
-            this.homeButton.setOnAction(event -> engine.load(this.homepage));
+            this.homeButton.setOnAction(event -> gotoUrl(this.homepage));
             this.refreshButton.setOnAction(event -> engine.reload());
             this.exitButton.setOnAction(event -> this.container.getItems().remove(this));
 
             this.horizontalSplitButton.setOnAction(event -> {
-                WebBuffer newBuffer = new WebBuffer(this.container, this.bufferWidth,
+                WebBuffer newBuffer = new WebBuffer(this, this.bufferWidth,
                     this.bufferHeight, locationBar.getCharacters().toString());
+                newBuffer.setOrientation(Orientation.VERTICAL);
                 this.addSplit(newBuffer);
                 this.setPrefHeight(this.getPrefHeight() / 2);
                 this.setOrientation(Orientation.VERTICAL);
@@ -154,12 +166,12 @@ public class Browser extends Application {
 
             // This should split the current pane in half vertically
             this.verticalSplitButton.setOnAction(event -> {
-                WebBuffer newBuffer = new WebBuffer(this.container, this.bufferWidth,
+                WebBuffer newBuffer = new WebBuffer(this, this.bufferWidth,
                     this.bufferHeight, locationBar.getCharacters().toString());
                 this.addSplit(newBuffer);
                 this.setPrefWidth(this.getPrefWidth() / 2);
                 this.setOrientation(Orientation.HORIZONTAL);
-                this.locationBar.setText("");
+                this.locationBar.setText(engine.getLocation());
             });
 
             // Change the location bar width
@@ -188,7 +200,7 @@ public class Browser extends Application {
                 if( newState == State.SUCCEEDED ) {
                     locationBar.setText(engine.getLocation());
                 } else if( newState == State.FAILED ) {
-                    engine.load("https://www.google.com/search?q=" + location);
+                    // TODO: Alert failure
                 }
             });
         }
