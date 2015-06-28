@@ -36,6 +36,8 @@ public class Browser extends Application {
         this.pane.getItems().add(initialBuffer);
 
         primaryStage.setScene(new Scene(this.pane, PREF_WIDTH, PREF_HEIGHT));
+        Image spider = new Image(ClassLoader.getSystemClassLoader().getResourceAsStream("images/spider.png"));
+        primaryStage.getIcons().add(spider);
         primaryStage.show();
     }
 
