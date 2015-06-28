@@ -1,6 +1,6 @@
 package com.gizmo385.browser;
 
-import java.util.function.Optional;
+import java.util.Optional;
 
 import javafx.concurrent.Worker.State;
 import javafx.application.Application;
@@ -123,6 +123,8 @@ public class Browser extends Application {
                         locationBar.requestFocus();
                     } else if( code == KeyCode.R ) {
                         engine.reload();
+                    } else if( code == KeyCode.P ) {
+                        showDialog();
                     }
                 }
             });
@@ -141,17 +143,11 @@ public class Browser extends Application {
         }
 
         private void showDialog() {
-            Optional<String> response = Dialogs.create()
-                .owner(stage)
-                .title("Text Input Dialog")
-                .masthead("Look, a Text Input Dialog")
-                .message("Please enter your name:")
-                .showTextInput("walter");
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setHeaderText("Where would you like to go:");
+            dialog.setTitle("CTRL-P Dialog");
 
-            // One way to get the response value.
-            if (response.isPresent()) {
-                System.out.println("Your name: " + response.get());
-            }
+            Optional<String> result = dialog.showAndWait();
         }
     }
 }
