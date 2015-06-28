@@ -30,21 +30,25 @@ public class Browser extends Application {
         primaryStage.setTitle("VimBrowser");
 
         this.pane = new TabPane();
-        ListChangeListener<Tab> listener = c -> {
+        this.pane.setPrefWidth(PREF_WIDTH);
+        this.pane.setPrefHeight(PREF_HEIGHT);
+
+        // Listen to see if the last tab has closed. If it has, close the window
+        ListChangeListener<Tab> lastTabClosedListener = c -> {
             if(this.pane.getTabs().isEmpty()) {
                 System.exit(0);
             }
         };
-        this.pane.getTabs().addListener(listener);
-        this.pane.setPrefWidth(PREF_WIDTH);
-        this.pane.setPrefHeight(PREF_HEIGHT);
+        this.pane.getTabs().addListener(lastTabClosedListener);
 
+        // Set up the initial tab
         Tab initialTab = new Tab();
         WebBuffer initialBuffer = new WebBuffer(null, initialTab, PREF_WIDTH, PREF_HEIGHT, "http://www.google.com");
         initialTab.setContent(initialBuffer);
         initialTab.setText("Tab");
         this.pane.getTabs().add(initialTab);
 
+        // Set the stage
         primaryStage.setScene(new Scene(this.pane, PREF_WIDTH, PREF_HEIGHT));
         Image spider = new Image(ClassLoader.getSystemClassLoader().getResourceAsStream("images/spider.png"));
         primaryStage.getIcons().add(spider);
@@ -97,12 +101,10 @@ public class Browser extends Application {
             this.homepage = homepage;
             this.buffer = new WebView();
             this.engine = this.buffer.getEngine();
-            //this.engine.load(homepage);
             gotoUrl(homepage);
 
             // Create the toolbar
             this.locationBar = new TextField();
-            //this.locationBar.setPrefWidth(this.getWidth() * .7);
             this.locationBar.autosize();
             this.locationBar.setText(this.homepage);
 
