@@ -22,6 +22,7 @@ repositories {
 
 jar {
     manifest {
+        attributes 'Application-Name' : "VimBrowser"
         attributes 'Main-Class' : mainClassName
     }
 }
