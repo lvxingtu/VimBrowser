@@ -18,7 +18,7 @@ import javafx.stage.Stage;
 public class Browser extends Application {
 
     private static final int PREF_WIDTH = 1400, PREF_HEIGHT = 950;
-    private SplitPane pane;
+    private TabPane pane;
 
     public static void main(String[] args) {
         launch(args);
@@ -28,17 +28,28 @@ public class Browser extends Application {
     public void start(Stage primaryStage) {
         primaryStage.setTitle("VimBrowser");
 
-        this.pane = new SplitPane();
+        this.pane = new TabPane();
         this.pane.setPrefWidth(PREF_WIDTH);
         this.pane.setPrefHeight(PREF_HEIGHT);
-        WebBuffer initialBuffer = new WebBuffer(this.pane, PREF_WIDTH,
-                PREF_HEIGHT, "http://www.google.com");
-        this.pane.getItems().add(initialBuffer);
+
+        Tab initialTab = new Tab();
+        WebBuffer initialBuffer = new WebBuffer(null, initialTab, PREF_WIDTH, PREF_HEIGHT, "http://www.google.com");
+        initialTab.setContent(initialBuffer);
+        initialTab.setText("Tab");
+        this.pane.getTabs().add(initialTab);
 
         primaryStage.setScene(new Scene(this.pane, PREF_WIDTH, PREF_HEIGHT));
         Image spider = new Image(ClassLoader.getSystemClassLoader().getResourceAsStream("images/spider.png"));
         primaryStage.getIcons().add(spider);
         primaryStage.show();
+    }
+
+    public void newTab() {
+        Tab initialTab = new Tab();
+        WebBuffer initialBuffer = new WebBuffer(null, initialTab, PREF_WIDTH, PREF_HEIGHT, "http://www.google.com");
+        initialTab.setContent(initialBuffer);
+        initialTab.setText("Tab");
+        this.pane.getTabs().add(initialTab);
     }
 
     private static Button createButton(String filename) {
@@ -66,11 +77,14 @@ public class Browser extends Application {
                 horizontalSplitButton, verticalSplitButton, exitButton;
         private TextField locationBar;
         private SplitPane container;
+        private Tab tab;
+
         private String homepage;
         private int bufferWidth, bufferHeight;
 
-        public WebBuffer(SplitPane container, int bufferWidth, int bufferHeight, String homepage) {
+        public WebBuffer(SplitPane container, Tab tab, int bufferWidth, int bufferHeight, String homepage) {
             this.container = container;
+            this.tab = tab;
             this.bufferWidth = bufferWidth;
             this.bufferHeight = bufferHeight;
             this.homepage = homepage;
@@ -81,7 +95,8 @@ public class Browser extends Application {
 
             // Create the toolbar
             this.locationBar = new TextField();
-            this.locationBar.setPrefWidth(this.getWidth() * .7);
+            //this.locationBar.setPrefWidth(this.getWidth() * .7);
+            this.locationBar.autosize();
             this.locationBar.setText(this.homepage);
 
             // Create the toolbar buttons
@@ -111,6 +126,10 @@ public class Browser extends Application {
             this.getItems().add(borderPane);
         }
 
+        public void closeTab() {
+            Browser.this.pane.getTabs().remove(this.tab);
+        }
+
         public void gotoUrl(String url) {
             if( url.matches(".+\\.\\w+.*") ) {
                 if( ! url.startsWith("http://") ) {
@@ -124,7 +143,7 @@ public class Browser extends Application {
         }
 
         public void resizeBuffer() {
-            this.locationBar.setPrefWidth(this.getWidth() * .5);
+            this.locationBar.autosize();
         }
 
         private void addSplit(WebBuffer buffer) {
@@ -152,11 +171,32 @@ public class Browser extends Application {
             // Button actions
             this.homeButton.setOnAction(event -> gotoUrl(this.homepage));
             this.refreshButton.setOnAction(event -> engine.reload());
-            this.exitButton.setOnAction(event -> this.container.getItems().remove(this));
+            this.exitButton.setOnAction(event -> {
+                if( this.container != null ) {
+                    this.container.getItems().remove(this);
+                }
+            });
 
+            this.backButton.setOnAction(event -> {
+                try {
+                    engine.getHistory().go(-1);
+                    String location = locationBar.getCharacters().toString();
+                    locationBar.setText(location);
+                } catch( IndexOutOfBoundsException ioobe ) { }
+            });
+
+            this.forwardButton.setOnAction(event -> {
+                try {
+                    engine.getHistory().go(1);
+                    String location = locationBar.getCharacters().toString();
+                    locationBar.setText(location);
+                } catch( IndexOutOfBoundsException ioobe ) { }
+            });
+
+            // This should split the current pane in half vertically
             this.horizontalSplitButton.setOnAction(event -> {
-                WebBuffer newBuffer = new WebBuffer(this, this.bufferWidth,
-                    this.bufferHeight, locationBar.getCharacters().toString());
+                WebBuffer newBuffer = new WebBuffer(this, tab, this.bufferWidth, this.bufferHeight,
+                    locationBar.getCharacters().toString());
                 newBuffer.setOrientation(Orientation.VERTICAL);
                 this.addSplit(newBuffer);
                 this.setPrefHeight(this.getPrefHeight() / 2);
@@ -166,8 +206,8 @@ public class Browser extends Application {
 
             // This should split the current pane in half vertically
             this.verticalSplitButton.setOnAction(event -> {
-                WebBuffer newBuffer = new WebBuffer(this, this.bufferWidth,
-                    this.bufferHeight, locationBar.getCharacters().toString());
+                WebBuffer newBuffer = new WebBuffer(this, tab, this.bufferWidth, this.bufferHeight,
+                    locationBar.getCharacters().toString());
                 this.addSplit(newBuffer);
                 this.setPrefWidth(this.getPrefWidth() / 2);
                 this.setOrientation(Orientation.HORIZONTAL);
@@ -188,6 +228,14 @@ public class Browser extends Application {
                         locationBar.requestFocus();
                     } else if( code == KeyCode.R ) {
                         engine.reload();
+                    } else if( code == KeyCode.T ) {
+                        newTab();
+                    } else if( code == KeyCode.W ) {
+                        if( event.isShiftDown() ) {
+                            System.exit(0);
+                        } else {
+                            closeTab();
+                        }
                     }
                 }
             });
