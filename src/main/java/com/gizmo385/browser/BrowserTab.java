@@ -16,10 +16,13 @@ public class BrowserTab extends Tab {
     private List<WebBuffer> horizontalSplits;
     private List<WebBuffer> verticalSplits;
 
-    public BrowserTab(String homepage, int paneWidth, int paneHeight) {
+    private String homepage;
+    private int tabWidth, tabHeight;
+
+    public BrowserTab(String homepage, int tabWidth, int tabHeight) {
         this.homepage = homepage;
-        this.paneWidth = paneWidth;
-        this.paneHeight = paneHeight;
+        this.tabWidth = tabWidth;
+        this.tabHeight = tabHeight;
 
         // TODO: Create initial WebBuffer
     }

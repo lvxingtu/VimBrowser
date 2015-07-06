@@ -66,6 +66,7 @@ public class WebBuffer extends BorderPane {
             this.locationBar.setText(location);
         });
 
+        // Add the listeners for the navigation buttons
         this.homeButton.setOnAction(event -> gotoUrl(this.homepage));
         this.refreshButton.setOnAction(event -> engine.reload());
         this.backButton.setOnAction(event -> moveInHistory(-1));
