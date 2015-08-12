@@ -9,20 +9,46 @@ import javafx.scene.layout.*;
 
 public class WebBuffer extends BorderPane {
 
+    // Rendering components
     private WebView webView;
     private WebEngine engine;
+
+    // Components in the buffer
     private ToolBar navigation;
     private Button backButton, forwardButton, homeButton, refreshButton, menuButton,
             horizontalSplitButton, verticalSplitButton, exitButton;
     private TextField locationBar;
 
+    // Settings
     private String homepage;
     private int bufferWidth, bufferHeight;
+    private BrowserTab tab;
+    private WebBuffer sourceBuffer;
 
-    public WebBuffer(String homepage, int bufferWidth, int bufferHeight) {
+    /**
+     * Creates a root web buffer which was not originally split from another buffer.
+     */
+    public WebBuffer(String homepage, int bufferWidth, int bufferHeight, BrowserTab tab) {
+        this(homepage, bufferWidth, bufferHeight, tab, null);
+    }
+
+    /**
+     * Creates a new web buffer, which represents a single web page open in a tab.
+     *
+     * @param homepage The page that this buffer should open to
+     * @param bufferWidth The width of this buffer in the tab
+     * @param bufferHeight The height of this buffer in the tab
+     * @param tab The tab that contains this buffer
+     * @param sourceBuffer The buffer that this buffer was split from. The root buffer should be
+     * null.
+     */
+    public WebBuffer(String homepage, int bufferWidth, int bufferHeight, BrowserTab tab, WebBuffer
+            sourceBuffer) {
         this.homepage = homepage;
         this.bufferWidth = bufferWidth;
         this.bufferHeight = bufferHeight;
+        this.tab = tab;
+        this.sourceBuffer = sourceBuffer;
 
         initComponents();
         initListeners();
@@ -128,5 +154,37 @@ public class WebBuffer extends BorderPane {
         } else {
             engine.load("https://www.google.com/search?q=" + url);
         }
+    }
+
+    public void horizontalSplit() {
+        this.tab.addSplit(this, SplitType.HORIZONTAL);
+    }
+
+    public void verticalSplit() {
+        this.tab.addSplit(this, SplitType.VERTICAL);
+    }
+
+    public void setHomepage(String homepage) {
+        this.homepage = homepage;
+    }
+
+    public String getHomepage() {
+        return this.homepage;
+    }
+
+    public void setBufferHeight(int height) {
+        this.bufferHeight = height;
+    }
+
+    public int getBufferHeight() {
+        return this.bufferHeight;
+    }
+
+    public void setBufferWidth(int width) {
+        this.bufferWidth = width;
+    }
+
+    public int getBufferWidth() {
+        return this.bufferWidth;
     }
 }

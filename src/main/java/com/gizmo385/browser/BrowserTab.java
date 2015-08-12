@@ -12,9 +12,8 @@ import java.util.ArrayList;
 
 public class BrowserTab extends Tab {
 
-    private SplitPane buffers;
-    private List<WebBuffer> horizontalSplits;
-    private List<WebBuffer> verticalSplits;
+    private FlowPane flowPane;
+    private List<WebBuffer> buffers;
 
     private String homepage;
     private int tabWidth, tabHeight;
@@ -27,13 +26,24 @@ public class BrowserTab extends Tab {
         // TODO: Create initial WebBuffer
     }
 
-    public void addHorizontalSplit(String destination) {
-        // TODO: Figure out how splits should be rendered
+    public void addSplit(WebBuffer source, SplitType splitType) {
+        // Get information about the source web buffer
+        int width = source.getBufferWidth();
+        int height = source.getBufferHeight();
+        String homepage = source.getHomepage();
+
+        if(splitType == SplitType.HORIZONTAL) {
+            height /= 2;
+        } else {
+            width /= 2;
+        }
+
+        // Create the new buffer and resize the old buffer
+        source.setBufferHeight(height);
+        source.setBufferWidth(width);
+        WebBuffer newBuffer = new WebBuffer(homepage, width, height, this, null);
+
+        buffers.add(newBuffer);
+        flowPane.getChildren().add(newBuffer);
     }
-
-    public void addVerticalSplit(String destination) {
-        // TODO: Figure out how splits should be rendered
-    }
-
-
 }
