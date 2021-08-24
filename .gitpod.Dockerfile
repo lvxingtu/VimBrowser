@@ -5,5 +5,5 @@ RUN apt-get update \
     && source "$HOME/.sdkman/bin/sdkman-init.sh" \
     && sdk install java 16.0.1-librca \
     && apt-get install -y  matchbox \
-    && apt-get clean && rm -rf /var/cache/apt/* && rm -rf /var/lib/apt/lists/* && rm -rf /tmp/*
+    && apt-get clean
 
